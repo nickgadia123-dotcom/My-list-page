@@ -1,287 +1,426 @@
 import { useState, useEffect } from "react";
 
-const coffeeItems = [
-  { id: 1, name: "OBSIDIAN BLEND", origin: "Ethiopia · Rwanda", roast: "Dark", price: "$24", note: "Tar, smoke, dark cherry" },
-  { id: 2, name: "SOLSTICE LIGHT", origin: "Colombia · Guatemala", roast: "Light", price: "$22", note: "Bergamot, honey, citrus peel" },
-  { id: 3, name: "IRON HOUSE", origin: "Sumatra · Brazil", roast: "Medium", price: "$20", note: "Cedar, tobacco, molasses" },
+const ROASTS = [
+  { id: 1, num: "01", name: "OBSIDIAN BLEND", origin: "Ethiopia · Rwanda", roast: "Dark", price: "$24", note: "Tar, smoke, dark cherry", accent: "#c8a96e", tag: "Bestseller" },
+  { id: 2, num: "02", name: "SOLSTICE LIGHT", origin: "Colombia · Guatemala", roast: "Light", price: "$22", note: "Bergamot, honey, citrus peel", accent: "#a8c87e", tag: "Seasonal" },
+  { id: 3, num: "03", name: "IRON HOUSE", origin: "Sumatra · Brazil", roast: "Medium", price: "$20", note: "Cedar, tobacco, molasses", accent: "#c8956e", tag: "Staff Pick" },
+  { id: 4, num: "04", name: "PEARL PROCESS", origin: "Yemen · Ethiopia", roast: "Light", price: "$28", note: "Jasmine, peach, raw sugar", accent: "#d4b896", tag: "Limited" },
 ];
 
-export default function CoffeeLanding() {
-  const [active, setActive] = useState(0);
+const PROCESS_STEPS = [
+  { step: "01", title: "Source", body: "We visit farms directly. No brokers, no blind buying. Every origin is hand-selected during harvest season." },
+  { step: "02", title: "Roast", body: "Small batches. Cast iron drums. Each profile is developed over months and locked down before it ships." },
+  { step: "03", title: "Ship", body: "Roasted Monday through Wednesday, shipped same day. At your door within 48 hours of the roast." },
+];
+
+const TESTIMONIALS = [
+  { quote: "The Obsidian is the only dark roast I've had that doesn't taste like burnt rubber. It's genuinely complex.", name: "M. Torres", location: "Portland, OR" },
+  { quote: "Switched from a big-name subscription six months ago. Haven't looked back. The freshness difference is real.", name: "J. Okafor", location: "London, UK" },
+  { quote: "The Solstice Light is what I wish all light roasts could be. Fruit-forward without being precious about it.", name: "S. Kim", location: "Seoul, KR" },
+];
+
+function CupIllustration({ accent = "#c8a96e" }) {
+  return (
+    <svg viewBox="0 0 300 380" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%", maxWidth: 300 }}>
+      <defs>
+        <radialGradient id="cupGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="cupBody" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.15" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0.04" />
+        </linearGradient>
+      </defs>
+
+      {/* Glow */}
+      <ellipse cx="150" cy="200" rx="130" ry="130" fill="url(#cupGlow)" />
+
+      {/* Steam */}
+      {[70, 100, 130].map((x, i) => (
+        <path key={x} d={`M${x} 90 Q${x + 10} 70 ${x} 50 Q${x - 8} 32 ${x} 14`}
+          stroke={accent} strokeWidth="2" strokeLinecap="round" opacity="0.45">
+          <animateTransform attributeName="transform" type="translate"
+            values="0,0; 0,-10; 0,0" dur={`${2.2 + i * 0.4}s`}
+            begin={`${i * 0.5}s`} repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.45;0.1;0.45"
+            dur={`${2.2 + i * 0.4}s`} begin={`${i * 0.5}s`} repeatCount="indefinite" />
+        </path>
+      ))}
+
+      {/* Cup body */}
+      <path d="M55 100 L72 280 Q74 296 90 296 L210 296 Q226 296 228 280 L245 100 Z"
+        fill="url(#cupBody)" stroke={accent} strokeWidth="1.5" opacity="0.85" />
+
+      {/* Rim ellipse */}
+      <ellipse cx="150" cy="100" rx="95" ry="14" fill={accent} fillOpacity="0.1"
+        stroke={accent} strokeWidth="1.5" opacity="0.9" />
+
+      {/* Coffee surface shimmer */}
+      <ellipse cx="150" cy="100" rx="88" ry="11" fill={accent} opacity="0.22" />
+      <ellipse cx="138" cy="98" rx="30" ry="5" fill={accent} opacity="0.12" />
+
+      {/* Handle */}
+      <path d="M245 140 Q296 140 296 185 Q296 232 245 232"
+        stroke={accent} strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.8" />
+      <path d="M245 148 Q282 148 282 185 Q282 224 245 224"
+        stroke={accent} strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.25" />
+
+      {/* Label band */}
+      <rect x="76" y="172" width="148" height="52" rx="2"
+        fill={accent} fillOpacity="0.08" stroke={accent} strokeOpacity="0.2" strokeWidth="1" />
+      <text x="150" y="195" textAnchor="middle" fill={accent} fontSize="8"
+        fontFamily="monospace" letterSpacing="3" opacity="0.7">VANTA</text>
+      <text x="150" y="212" textAnchor="middle" fill={accent} fontSize="7"
+        fontFamily="monospace" letterSpacing="2" opacity="0.45">COFFEE CO.</text>
+
+      {/* Saucer */}
+      <ellipse cx="150" cy="310" rx="110" ry="14"
+        fill={accent} fillOpacity="0.06" stroke={accent} strokeWidth="1.2" opacity="0.5" />
+      <ellipse cx="150" cy="310" rx="80" ry="9"
+        fill={accent} fillOpacity="0.08" opacity="0.6" />
+
+      {/* Floating beans */}
+      {[
+        { cx: 36, cy: 160, r: 14, rx2: 8, rotate: -30 },
+        { cx: 264, cy: 240, r: 12, rx2: 7, rotate: 20 },
+        { cx: 28, cy: 268, r: 10, rx2: 6, rotate: 45 },
+      ].map((b, i) => (
+        <g key={i}>
+          <animateTransform attributeName="transform" type="translate"
+            values={`0,0; 0,${-8 - i * 3}; 0,0`} dur={`${3.5 + i}s`}
+            begin={`${i * 1.1}s`} repeatCount="indefinite" />
+          <ellipse cx={b.cx} cy={b.cy} rx={b.r} ry={b.r * 0.65}
+            fill={accent} fillOpacity="0.12" stroke={accent} strokeWidth="1" opacity="0.5"
+            transform={`rotate(${b.rotate} ${b.cx} ${b.cy})`} />
+          <path d={`M${b.cx - b.r + 3} ${b.cy} Q${b.cx} ${b.cy - b.r * 0.4} ${b.cx + b.r - 3} ${b.cy}`}
+            stroke={accent} strokeWidth="1" fill="none" opacity="0.4"
+            transform={`rotate(${b.rotate} ${b.cx} ${b.cy})`} />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+export default function VantaCoffee() {
+  const [visible, setVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const t = setTimeout(() => setVisible(true), 80);
+    const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => setTestimonialIdx(i => (i + 1) % TESTIMONIALS.length), 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const tabs = ["All", "Dark", "Medium", "Light"];
+  const filtered = activeTab === 0 ? ROASTS : ROASTS.filter(r => r.roast === tabs[activeTab]);
+  const T = TESTIMONIALS[testimonialIdx];
+
   return (
-    <div style={{
-      fontFamily: "'Georgia', 'Times New Roman', serif",
-      background: "#0a0804",
-      color: "#f0e8d8",
-      minHeight: "100vh",
-      overflowX: "hidden",
-    }}>
+    <div style={{ background: "#070503", color: "#f0e8d8", minHeight: "100vh", fontFamily: "Georgia, 'Times New Roman', serif", overflowX: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Space+Mono:wght@400;700&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0a0804; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
 
         .nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 24px 48px;
-          transition: background 0.4s, padding 0.4s;
+          position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 30px 60px; transition: all 0.4s ease;
         }
-        .nav.scrolled { background: rgba(10,8,4,0.95); padding: 16px 48px; border-bottom: 1px solid rgba(240,232,216,0.1); }
-        .nav-logo { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; letter-spacing: 0.2em; color: #c8a96e; }
-        .nav-links { display: flex; gap: 36px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; }
-        .nav-links a { color: #f0e8d8; opacity: 0.7; text-decoration: none; transition: opacity 0.2s; cursor: pointer; }
-        .nav-links a:hover { opacity: 1; }
+        .nav.solid {
+          background: rgba(7,5,3,0.95); padding: 18px 60px;
+          border-bottom: 1px solid rgba(200,169,110,0.18);
+          backdrop-filter: blur(16px);
+        }
+        .nav-logo { font-size: 20px; font-weight: 900; letter-spacing: 0.28em; color: #c8a96e; }
+        .nav-links { display: flex; gap: 36px; list-style: none; }
+        .nav-links a { font-family: monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(240,232,216,0.5); text-decoration: none; transition: color 0.2s; }
+        .nav-links a:hover { color: #c8a96e; }
+        .nav-btn { font-family: monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; background: #c8a96e; color: #070503; border: none; padding: 13px 28px; cursor: pointer; transition: all 0.2s; }
+        .nav-btn:hover { background: #dfc07c; transform: translateY(-1px); }
 
-        .hero {
-          min-height: 100vh;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          position: relative;
-        }
-        .hero-left {
-          display: flex; flex-direction: column; justify-content: flex-end;
-          padding: 120px 48px 80px;
-          position: relative;
-        }
-        .hero-eyebrow {
-          font-family: 'Space Mono', monospace; font-size: 10px;
-          letter-spacing: 0.3em; text-transform: uppercase;
-          color: #c8a96e; margin-bottom: 24px;
-        }
-        .hero-title {
-          font-family: 'Playfair Display', serif;
-          font-size: clamp(52px, 7vw, 96px);
-          font-weight: 900; line-height: 0.95;
-          color: #f0e8d8;
-          animation: fadeUp 1s ease both;
-        }
-        .hero-title em { font-style: italic; color: #c8a96e; }
-        .hero-sub {
-          margin-top: 32px;
-          font-family: 'Space Mono', monospace; font-size: 12px;
-          line-height: 1.8; color: rgba(240,232,216,0.55);
-          max-width: 320px;
-          animation: fadeUp 1s 0.2s ease both;
-        }
-        .hero-cta {
-          margin-top: 48px;
-          display: flex; gap: 16px; align-items: center;
-          animation: fadeUp 1s 0.4s ease both;
-        }
-        .btn-primary {
-          background: #c8a96e; color: #0a0804;
-          border: none; padding: 16px 36px;
-          font-family: 'Space Mono', monospace; font-size: 11px;
-          letter-spacing: 0.15em; text-transform: uppercase;
-          cursor: pointer; transition: background 0.2s, transform 0.2s;
-        }
-        .btn-primary:hover { background: #e0c080; transform: translateY(-2px); }
-        .btn-ghost {
-          background: transparent; color: #f0e8d8;
-          border: 1px solid rgba(240,232,216,0.3); padding: 16px 36px;
-          font-family: 'Space Mono', monospace; font-size: 11px;
-          letter-spacing: 0.15em; text-transform: uppercase;
-          cursor: pointer; transition: border-color 0.2s;
-        }
+        /* HERO */
+        .hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; position: relative; padding-top: 110px; overflow: hidden; }
+        .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 72% 45%, rgba(200,169,110,0.07) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(200,100,50,0.04) 0%, transparent 50%); pointer-events: none; }
+        .hero-grain { position: absolute; inset: 0; opacity: 0.03; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 180px; }
+
+        .hero-left { display: flex; flex-direction: column; justify-content: center; padding: 60px 56px 80px 60px; position: relative; z-index: 2; }
+        .fade-up { opacity: 0; transform: translateY(20px); transition: opacity 0.8s ease, transform 0.8s ease; }
+        .fade-up.in { opacity: 1; transform: translateY(0); }
+
+        .eyebrow { font-family: monospace; font-size: 10px; letter-spacing: 0.38em; text-transform: uppercase; color: #c8a96e; margin-bottom: 24px; display: flex; align-items: center; gap: 14px; }
+        .eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: #c8a96e; opacity: 0.5; }
+
+        .hero-h1 { font-size: clamp(50px, 6.5vw, 90px); font-weight: 900; line-height: 0.93; letter-spacing: -0.01em; }
+        .hero-h1 em { font-style: italic; color: #c8a96e; }
+
+        .hero-body { margin-top: 32px; font-family: monospace; font-size: 12px; line-height: 2; color: rgba(240,232,216,0.45); max-width: 360px; }
+
+        .hero-actions { margin-top: 48px; display: flex; gap: 14px; align-items: center; }
+        .btn-gold { background: #c8a96e; color: #070503; border: none; padding: 18px 42px; font-family: monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+        .btn-gold:hover { background: #dfc07c; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(200,169,110,0.25); }
+        .btn-ghost { background: transparent; color: rgba(240,232,216,0.6); border: 1px solid rgba(240,232,216,0.18); padding: 18px 40px; font-family: monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
         .btn-ghost:hover { border-color: #c8a96e; color: #c8a96e; }
 
-        .hero-right {
-          position: relative;
-          display: flex; align-items: center; justify-content: center;
-          overflow: hidden;
-        }
-        .hero-visual {
-          width: 340px; height: 500px;
-          background: linear-gradient(160deg, #2a1f0e 0%, #1a1008 60%, #0d0804 100%);
-          border-radius: 2px;
-          position: relative;
-          box-shadow: -60px 0 120px rgba(0,0,0,0.6), inset 0 0 60px rgba(200,169,110,0.05);
-          animation: fadeIn 1.2s ease both;
-        }
-        .hero-visual::before {
-          content: '☕';
-          position: absolute; top: 50%; left: 50%; transform: translate(-50%, -55%);
-          font-size: 120px; opacity: 0.15;
-        }
-        .hero-visual-label {
-          position: absolute; bottom: 32px; left: 32px; right: 32px;
-          font-family: 'Playfair Display', serif;
-          font-size: 28px; font-style: italic;
-          color: #c8a96e; opacity: 0.8;
-          border-top: 1px solid rgba(200,169,110,0.3); padding-top: 16px;
-        }
+        .hero-trust { margin-top: 52px; display: flex; align-items: center; gap: 20px; padding-top: 36px; border-top: 1px solid rgba(240,232,216,0.07); }
+        .trust-stars { color: #c8a96e; font-size: 14px; letter-spacing: 2px; }
+        .trust-text { font-family: monospace; font-size: 10px; letter-spacing: 0.1em; color: rgba(240,232,216,0.35); }
 
-        .section-divider {
-          height: 1px; background: rgba(240,232,216,0.1);
-          margin: 0 48px;
-        }
+        .hero-right { display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; padding: 40px; }
+        .cup-wrap { width: 280px; height: 380px; opacity: 0; transform: translateY(24px) scale(0.96); transition: all 1s 0.2s ease; }
+        .cup-wrap.in { opacity: 1; transform: translateY(0) scale(1); }
 
-        .menu-section { padding: 100px 48px; }
-        .section-header {
-          display: flex; align-items: flex-end; justify-content: space-between;
-          margin-bottom: 64px;
-        }
-        .section-title {
-          font-family: 'Playfair Display', serif;
-          font-size: clamp(36px, 5vw, 64px); font-weight: 900;
-          line-height: 1;
-        }
-        .section-note {
-          font-family: 'Space Mono', monospace; font-size: 10px;
-          letter-spacing: 0.2em; text-transform: uppercase;
-          color: rgba(240,232,216,0.4);
-          max-width: 200px; text-align: right; line-height: 1.8;
-        }
+        /* TICKER */
+        .ticker { background: #c8a96e; overflow: hidden; padding: 0; height: 44px; display: flex; align-items: center; }
+        .ticker-track { display: flex; gap: 0; animation: ticker 22s linear infinite; white-space: nowrap; }
+        .ticker-item { font-family: monospace; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: #070503; padding: 0 40px; opacity: 0.85; }
+        .ticker-dot { color: #070503; opacity: 0.4; margin: 0; }
+        @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-        .menu-tabs {
-          display: flex; gap: 0; margin-bottom: 0;
-          border-bottom: 1px solid rgba(240,232,216,0.1);
-        }
-        .menu-tab {
-          padding: 16px 32px;
-          font-family: 'Space Mono', monospace; font-size: 11px;
-          letter-spacing: 0.15em; text-transform: uppercase;
-          cursor: pointer; border: none; background: transparent;
-          color: rgba(240,232,216,0.4);
-          border-bottom: 2px solid transparent;
-          margin-bottom: -1px;
-          transition: color 0.2s, border-color 0.2s;
-        }
-        .menu-tab.active { color: #c8a96e; border-bottom-color: #c8a96e; }
-        .menu-tab:hover:not(.active) { color: rgba(240,232,216,0.8); }
+        /* STATS */
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(200,169,110,0.12); border-bottom: 1px solid rgba(200,169,110,0.12); }
+        .stat { padding: 44px 28px; text-align: center; border-right: 1px solid rgba(200,169,110,0.1); position: relative; overflow: hidden; }
+        .stat:last-child { border-right: none; }
+        .stat::before { content: ''; position: absolute; inset: 0; background: rgba(200,169,110,0.0); transition: background 0.3s; }
+        .stat:hover::before { background: rgba(200,169,110,0.03); }
+        .stat-val { font-size: 46px; font-weight: 900; color: #c8a96e; line-height: 1; }
+        .stat-lbl { font-family: monospace; font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(240,232,216,0.3); margin-top: 10px; }
 
-        .menu-card {
-          padding: 48px 0;
-          border-bottom: 1px solid rgba(240,232,216,0.08);
-          display: grid; grid-template-columns: 1fr auto;
-          gap: 32px; align-items: start;
-          cursor: pointer; transition: padding-left 0.3s;
-        }
-        .menu-card:hover { padding-left: 16px; }
-        .menu-card-num {
-          font-family: 'Space Mono', monospace; font-size: 10px;
-          color: rgba(200,169,110,0.5); margin-bottom: 8px;
-        }
-        .menu-card-name {
-          font-family: 'Playfair Display', serif;
-          font-size: 28px; font-weight: 700;
-          transition: color 0.2s;
-        }
-        .menu-card:hover .menu-card-name { color: #c8a96e; }
-        .menu-card-meta {
-          display: flex; gap: 24px; margin-top: 12px;
-          font-family: 'Space Mono', monospace; font-size: 10px;
-          letter-spacing: 0.1em; color: rgba(240,232,216,0.4);
-        }
-        .menu-card-note {
-          font-family: 'Georgia', serif; font-style: italic;
-          font-size: 14px; color: rgba(240,232,216,0.5); margin-top: 8px;
-        }
-        .menu-card-price {
-          font-family: 'Playfair Display', serif;
-          font-size: 32px; font-weight: 900; color: #c8a96e;
-          align-self: center;
-        }
+        /* MENU */
+        .menu { padding: 100px 60px; }
+        .menu-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 60px; }
+        .menu-h2 { font-size: clamp(34px, 5vw, 62px); font-weight: 900; line-height: 1; }
+        .menu-h2 span { color: #c8a96e; font-style: italic; }
+        .menu-aside { font-family: monospace; font-size: 10px; line-height: 1.9; color: rgba(240,232,216,0.3); text-align: right; max-width: 220px; }
 
-        .footer-strip {
-          background: #c8a96e; color: #0a0804;
-          padding: 24px 48px;
-          display: flex; justify-content: space-between; align-items: center;
-        }
-        .footer-text {
-          font-family: 'Space Mono', monospace; font-size: 11px;
-          letter-spacing: 0.15em; text-transform: uppercase;
-        }
+        .tabs { display: flex; border-bottom: 1px solid rgba(240,232,216,0.08); margin-bottom: 8px; }
+        .tab { padding: 14px 26px; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(240,232,216,0.3); cursor: pointer; transition: all 0.2s; }
+        .tab.on { color: #c8a96e; border-bottom-color: #c8a96e; }
+        .tab:hover:not(.on) { color: rgba(240,232,216,0.65); }
 
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.97); }
-          to { opacity: 1; transform: scale(1); }
-        }
+        .card { display: grid; grid-template-columns: 52px 1fr auto auto; align-items: center; gap: 28px; padding: 34px 16px; border-bottom: 1px solid rgba(240,232,216,0.06); cursor: pointer; transition: all 0.25s; border-radius: 3px; }
+        .card:hover { background: rgba(200,169,110,0.04); padding-left: 28px; }
+        .card-num { font-family: monospace; font-size: 10px; letter-spacing: 0.1em; color: rgba(200,169,110,0.35); }
+        .card-name { font-size: 24px; font-weight: 900; transition: color 0.2s; }
+        .card:hover .card-name { color: #c8a96e; }
+        .card-origin { font-family: monospace; font-size: 10px; letter-spacing: 0.08em; color: rgba(240,232,216,0.3); margin-top: 5px; }
+        .card-note { font-style: italic; font-size: 13px; color: rgba(240,232,216,0.38); margin-top: 4px; }
+        .card-tag { font-family: monospace; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; white-space: nowrap; }
+        .card-price { font-size: 26px; font-weight: 900; color: #c8a96e; }
+
+        /* PROCESS */
+        .process { padding: 100px 60px; border-top: 1px solid rgba(240,232,216,0.06); display: grid; grid-template-columns: 1fr 2fr; gap: 80px; align-items: start; }
+        .process-h2 { font-size: clamp(32px, 4vw, 52px); font-weight: 900; line-height: 1.05; }
+        .process-h2 em { font-style: italic; color: #c8a96e; }
+        .process-steps { display: flex; flex-direction: column; gap: 0; }
+        .step { display: grid; grid-template-columns: 56px 1fr; gap: 28px; padding: 36px 0; border-bottom: 1px solid rgba(240,232,216,0.07); align-items: start; }
+        .step-num { font-family: monospace; font-size: 11px; letter-spacing: 0.15em; color: rgba(200,169,110,0.45); padding-top: 4px; }
+        .step-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+        .step-body { font-family: monospace; font-size: 11px; line-height: 1.9; color: rgba(240,232,216,0.38); }
+
+        /* TESTIMONIALS */
+        .testimonials { background: rgba(200,169,110,0.04); border-top: 1px solid rgba(200,169,110,0.12); border-bottom: 1px solid rgba(200,169,110,0.12); padding: 80px 60px; text-align: center; min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .t-quote { font-size: clamp(17px, 2.2vw, 22px); line-height: 1.65; max-width: 640px; font-style: italic; color: rgba(240,232,216,0.8); transition: opacity 0.4s; }
+        .t-attr { margin-top: 28px; font-family: monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #c8a96e; opacity: 0.7; }
+        .t-dots { display: flex; gap: 8px; justify-content: center; margin-top: 32px; }
+        .t-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(200,169,110,0.2); cursor: pointer; transition: background 0.2s; border: none; }
+        .t-dot.on { background: #c8a96e; }
+
+        /* CTA STRIP */
+        .cta-strip { background: #c8a96e; padding: 28px 60px; display: flex; justify-content: space-between; align-items: center; }
+        .cta-strip-text { font-family: monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #070503; opacity: 0.85; }
+        .cta-strip-btn { background: #070503; color: #c8a96e; border: none; padding: 14px 32px; font-family: monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+        .cta-strip-btn:hover { background: #1a120a; }
+
+        /* FOOTER */
+        .footer { padding: 60px 60px 48px; border-top: 1px solid rgba(240,232,216,0.07); }
+        .footer-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(240,232,216,0.07); }
+        .footer-brand-logo { font-size: 22px; font-weight: 900; letter-spacing: 0.25em; color: #c8a96e; margin-bottom: 16px; }
+        .footer-brand-body { font-family: monospace; font-size: 10px; line-height: 1.9; color: rgba(240,232,216,0.28); max-width: 200px; }
+        .footer-col-title { font-family: monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(240,232,216,0.25); margin-bottom: 20px; }
+        .footer-col-links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        .footer-col-links a { font-family: monospace; font-size: 11px; color: rgba(240,232,216,0.45); text-decoration: none; transition: color 0.2s; }
+        .footer-col-links a:hover { color: #c8a96e; }
+        .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 32px; }
+        .footer-copy { font-family: monospace; font-size: 10px; letter-spacing: 0.12em; color: rgba(240,232,216,0.2); }
       `}</style>
 
-      {/* Nav */}
-      <nav className={`nav ${scrolled ? "scrolled" : ""}`}>
+      {/* NAV */}
+      <nav className={`nav ${scrolled ? "solid" : ""}`}>
         <div className="nav-logo">VANTA</div>
-        <div className="nav-links">
-          <a>Origins</a>
-          <a>Process</a>
-          <a>Wholesale</a>
-          <a>Visit</a>
-        </div>
+        <ul className="nav-links">
+          <li><a href="#">Origins</a></li>
+          <li><a href="#">Process</a></li>
+          <li><a href="#">Wholesale</a></li>
+          <li><a href="#">Visit Us</a></li>
+        </ul>
+        <button className="nav-btn">Order Now</button>
       </nav>
 
-      {/* Hero */}
+      {/* HERO */}
       <section className="hero">
+        <div className="hero-bg" />
+        <div className="hero-grain" />
         <div className="hero-left">
-          <div className="hero-eyebrow">Est. 2019 · Single Origin Roasters</div>
-          <h1 className="hero-title">
+          <p className={`eyebrow fade-up ${visible ? "in" : ""}`} style={{ transitionDelay: "0s" }}>Est. 2019 · Single Origin Roasters</p>
+          <h1 className={`hero-h1 fade-up ${visible ? "in" : ""}`} style={{ transitionDelay: "0.1s" }}>
             Coffee<br />as <em>Dark</em><br />as Intent.
           </h1>
-          <p className="hero-sub">
-            We source from elevation farms, roast to the edge, and ship within 48 hours. No compromises. No middlemen.
+          <p className={`hero-body fade-up ${visible ? "in" : ""}`} style={{ transitionDelay: "0.22s" }}>
+            We source from elevation farms, roast to the absolute edge, and ship within 48 hours. No compromises. No middlemen. Just the purest cup you've ever had.
           </p>
-          <div className="hero-cta">
-            <button className="btn-primary">Shop Roasts</button>
+          <div className={`hero-actions fade-up ${visible ? "in" : ""}`} style={{ transitionDelay: "0.34s" }}>
+            <button className="btn-gold">Shop Roasts</button>
             <button className="btn-ghost">Our Story</button>
+          </div>
+          <div className={`hero-trust fade-up ${visible ? "in" : ""}`} style={{ transitionDelay: "0.46s" }}>
+            <div className="trust-stars">★★★★★</div>
+            <div className="trust-text">4.9 from 2,400+ reviews · Free shipping over $60</div>
           </div>
         </div>
         <div className="hero-right">
-          <div className="hero-visual">
-            <div className="hero-visual-label">Current Season<br />Ethiopia · Yirgacheffe</div>
+          <div className={`cup-wrap ${visible ? "in" : ""}`}>
+            <CupIllustration accent="#c8a96e" />
           </div>
         </div>
       </section>
 
-      <div className="section-divider" />
-
-      {/* Menu */}
-      <section className="menu-section">
-        <div className="section-header">
-          <h2 className="section-title">The<br />Current<br />Roster.</h2>
-          <div className="section-note">Seasonal selections roasted fresh to order every week.</div>
-        </div>
-
-        <div className="menu-tabs">
-          {["All", "Dark", "Medium", "Light"].map((t, i) => (
-            <button key={t} className={`menu-tab ${active === i ? "active" : ""}`} onClick={() => setActive(i)}>{t}</button>
+      {/* TICKER */}
+      <div className="ticker">
+        <div className="ticker-track">
+          {[...Array(2)].map((_, ri) => (
+            ["Direct Trade", "Freshly Roasted", "48-Hour Ship", "12 Origins", "Small Batch", "No Middlemen", "Elevation Farms", "Free Shipping $60+"].map((item, i) => (
+              <span key={`${ri}-${i}`} className="ticker-item">{item} <span className="ticker-dot">·</span></span>
+            ))
           ))}
         </div>
+      </div>
 
-        {coffeeItems.map((item, i) => (
-          <div className="menu-card" key={item.id}>
+      {/* STATS */}
+      <div className="stats">
+        {[
+          { val: "12", lbl: "Origins" },
+          { val: "48h", lbl: "Roast to Ship" },
+          { val: "6yrs", lbl: "Running" },
+          { val: "100%", lbl: "Direct Trade" },
+        ].map(s => (
+          <div className="stat" key={s.lbl}>
+            <div className="stat-val">{s.val}</div>
+            <div className="stat-lbl">{s.lbl}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* MENU */}
+      <section className="menu">
+        <div className="menu-header">
+          <h2 className="menu-h2">The <span>Current</span><br />Roster.</h2>
+          <p className="menu-aside">Seasonal selections. Roasted fresh to order every week. Shipped within 48 hours.</p>
+        </div>
+        <div className="tabs">
+          {["All", "Dark", "Medium", "Light"].map((t, i) => (
+            <button key={t} className={`tab ${activeTab === i ? "on" : ""}`} onClick={() => setActiveTab(i)}>{t}</button>
+          ))}
+        </div>
+        {filtered.map(r => (
+          <div className="card" key={r.id}>
+            <div className="card-num">{r.num}</div>
             <div>
-              <div className="menu-card-num">0{i + 1}</div>
-              <div className="menu-card-name">{item.name}</div>
-              <div className="menu-card-meta">
-                <span>{item.origin}</span>
-                <span>·</span>
-                <span>{item.roast} Roast</span>
-              </div>
-              <div className="menu-card-note">{item.note}</div>
+              <div className="card-name">{r.name}</div>
+              <div className="card-origin">{r.origin} · {r.roast} Roast</div>
+              <div className="card-note">{r.note}</div>
             </div>
-            <div className="menu-card-price">{item.price}</div>
+            <div>
+              <span className="card-tag" style={{ background: `${r.accent}14`, color: r.accent, border: `1px solid ${r.accent}30` }}>{r.tag}</span>
+            </div>
+            <div className="card-price">{r.price}</div>
           </div>
         ))}
       </section>
 
-      {/* Footer strip */}
-      <div className="footer-strip">
-        <span className="footer-text">VANTA Coffee Roasters</span>
-        <span className="footer-text">Free shipping over $60 · Roasted to order</span>
+      {/* PROCESS */}
+      <section className="process">
+        <div>
+          <h2 className="process-h2">How<br />We <em>Do</em><br />It.</h2>
+        </div>
+        <div className="process-steps">
+          {PROCESS_STEPS.map(s => (
+            <div className="step" key={s.step}>
+              <div className="step-num">{s.step}</div>
+              <div>
+                <div className="step-title">{s.title}</div>
+                <div className="step-body">{s.body}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="testimonials">
+        <p className="t-quote">"{T.quote}"</p>
+        <p className="t-attr">{T.name} · {T.location}</p>
+        <div className="t-dots">
+          {TESTIMONIALS.map((_, i) => (
+            <button key={i} className={`t-dot ${i === testimonialIdx ? "on" : ""}`} onClick={() => setTestimonialIdx(i)} />
+          ))}
+        </div>
+      </section>
+
+      {/* CTA STRIP */}
+      <div className="cta-strip">
+        <span className="cta-strip-text">Subscribe & save 15% · Free shipping over $60 · Cancel anytime</span>
+        <button className="cta-strip-btn">Start Subscription</button>
       </div>
+
+      {/* FOOTER */}
+      <footer className="footer">
+        <div className="footer-top">
+          <div>
+            <div className="footer-brand-logo">VANTA</div>
+            <p className="footer-brand-body">Single origin. Small batch. Direct trade. Roasted in Portland, shipped to the world.</p>
+          </div>
+          <div>
+            <div className="footer-col-title">Shop</div>
+            <ul className="footer-col-links">
+              <li><a href="#">All Roasts</a></li>
+              <li><a href="#">Subscriptions</a></li>
+              <li><a href="#">Brewing Gear</a></li>
+              <li><a href="#">Gift Cards</a></li>
+            </ul>
+          </div>
+          <div>
+            <div className="footer-col-title">Company</div>
+            <ul className="footer-col-links">
+              <li><a href="#">Our Story</a></li>
+              <li><a href="#">Origins</a></li>
+              <li><a href="#">Wholesale</a></li>
+              <li><a href="#">Careers</a></li>
+            </ul>
+          </div>
+          <div>
+            <div className="footer-col-title">Support</div>
+            <ul className="footer-col-links">
+              <li><a href="#">FAQ</a></li>
+              <li><a href="#">Shipping</a></li>
+              <li><a href="#">Returns</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span className="footer-copy">© 2026 Vanta Coffee Roasters · Portland, OR</span>
+          <span className="footer-copy">Privacy · Terms · Accessibility</span>
+        </div>
+      </footer>
     </div>
   );
 }
